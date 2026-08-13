@@ -1,6 +1,6 @@
 /** Vector retrieval: embed a query and find the most similar doc chunks. */
 import { existsSync } from 'node:fs'
-import type { Source } from '../../shared/types'
+import type { Source } from '../../../shared/types'
 import { DB_PATH } from './paths'
 import { openDb } from './db'
 import type { VecDB } from './db'

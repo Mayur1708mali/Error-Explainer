@@ -29,12 +29,23 @@ Rules:
 - If you have no reliable sources, set "sources" to an empty array [].
 - Keep "rootCause" focused on the actual cause, not generic advice.`
 
-/** Build the chat messages for analyzing a given error/stack-trace input. */
-export function buildAnalyzeMessages(input: string): ChatMessage[] {
-  return [
-    { role: 'system', content: SYSTEM_PROMPT },
-    { role: 'user', content: `Analyze this error or stack trace:\n\n${input}` },
-  ]
+/**
+ * Build the chat messages for analyzing a given error/stack-trace input.
+ * When `context` (retrieved documentation) is provided, it is added as
+ * grounding material the model should prefer over its own recollection.
+ */
+export function buildAnalyzeMessages(input: string, context?: string): ChatMessage[] {
+  const messages: ChatMessage[] = [{ role: 'system', content: SYSTEM_PROMPT }]
+
+  if (context && context.trim().length > 0) {
+    messages.push({
+      role: 'system',
+      content: `Use the following documentation excerpts as authoritative context. Prefer them over your own memory when they are relevant. Do not invent URLs.\n\n${context}`,
+    })
+  }
+
+  messages.push({ role: 'user', content: `Analyze this error or stack trace:\n\n${input}` })
+  return messages
 }
 
 /**
