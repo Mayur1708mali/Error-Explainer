@@ -2,6 +2,7 @@ import { InputPanel } from './components/InputPanel'
 import { ResultPanel } from './components/ResultPanel'
 import { HistorySidebar } from './components/HistorySidebar'
 import { OllamaStatusBadge } from './components/OllamaStatusBadge'
+import { BackendStatusBanner } from './components/BackendStatusBanner'
 import { SettingsPanel } from './components/SettingsPanel'
 import { useStatus } from './hooks/useStatus'
 import './App.css'
@@ -12,6 +13,8 @@ function App() {
 
   return (
     <div className="app">
+      <BackendStatusBanner />
+
       <header className="app__header">
         <div className="app__brand">
           <span className="app__logo" aria-hidden="true">
