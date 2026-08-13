@@ -3,6 +3,7 @@ import { ResultPanel } from './components/ResultPanel'
 import { HistorySidebar } from './components/HistorySidebar'
 import { OllamaStatusBadge } from './components/OllamaStatusBadge'
 import { BackendStatusBanner } from './components/BackendStatusBanner'
+import { OnboardingOverlay } from './components/OnboardingOverlay'
 import { SettingsPanel } from './components/SettingsPanel'
 import { useStatus } from './hooks/useStatus'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
@@ -16,6 +17,7 @@ function App() {
 
   return (
     <div className="app">
+      <OnboardingOverlay />
       <BackendStatusBanner />
 
       <header className="app__header">
