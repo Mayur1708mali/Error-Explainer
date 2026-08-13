@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Databases and generated RAG data (scraped docs, chunks, sqlite db)
+*.db
+backend/data/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
