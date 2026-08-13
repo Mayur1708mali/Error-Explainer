@@ -70,14 +70,15 @@ export function HistorySidebar() {
       </div>
 
       {historyLoading && historyList.length === 0 ? (
-        <p className="history__loading">Loading...</p>
+        <p className="history__loading" role="status">Loading…</p>
       ) : historyList.length === 0 ? (
         <EmptyState
+          icon={<span>{historySearch ? '🔎' : '📋'}</span>}
           title={historySearch ? 'No matches' : 'No history yet'}
           description={
             historySearch
               ? 'Try a different search term.'
-              : 'Analyzed errors will appear here.'
+              : 'Analyzed errors will appear here. Use ⌘K to search.'
           }
         />
       ) : (

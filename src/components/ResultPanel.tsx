@@ -60,8 +60,9 @@ export function ResultPanel() {
     return (
       <div className="result-panel">
         <EmptyState
+          icon={<span>🔍</span>}
           title="No analysis yet"
-          description="Paste an error or stack trace and hit Analyze to see the root cause and suggested fixes."
+          description="Paste an error or stack trace on the left and hit Analyze (⌘↵) to see the root cause and suggested fixes."
         />
       </div>
     )
