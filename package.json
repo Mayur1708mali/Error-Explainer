@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:backend": "tsx watch backend/src/server.ts",
+    "dev:all": "concurrently -n frontend,backend -c cyan,magenta \"npm:dev\" \"npm:dev:backend\"",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
