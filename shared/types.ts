@@ -9,16 +9,22 @@ import type { AnalyzeResponse, Source } from './schema'
 export type { AnalyzeResponse, Source }
 
 /** Chat model that can be selected for analysis. Restricted to what we ship. */
-export type ChatModel = 'qwen2.5-coder:3b'
+export type ChatModel = 'qwen2.5-coder:3b' | 'qwen2.5-coder:7b'
 
 /** The chat model options exposed in the settings picker. */
-export const CHAT_MODELS: ChatModel[] = ['qwen2.5-coder:3b']
+export const CHAT_MODELS: ChatModel[] = ['qwen2.5-coder:3b', 'qwen2.5-coder:7b']
+
+/** Human-readable labels for each model option. */
+export const CHAT_MODEL_LABELS: Record<ChatModel, string> = {
+  'qwen2.5-coder:3b': 'Qwen 2.5 Coder 3B (fast)',
+  'qwen2.5-coder:7b': 'Qwen 2.5 Coder 7B (accurate)',
+}
 
 /** Default chat model used when none is specified. */
 export const DEFAULT_CHAT_MODEL: ChatModel = 'qwen2.5-coder:3b'
 
 /** Models that must be pulled in Ollama for the app to work. */
-export const REQUIRED_MODELS = ['qwen2.5-coder:3b', 'nomic-embed-text'] as const
+export const REQUIRED_MODELS = ['qwen2.5-coder:3b', 'qwen2.5-coder:7b', 'nomic-embed-text'] as const
 
 /** The request body sent to POST /analyze. */
 export interface AnalyzeRequest {
@@ -64,3 +70,12 @@ export interface HistoryPage {
 
 /** Connectivity state of the local Ollama server. */
 export type OllamaStatus = 'unknown' | 'checking' | 'connected' | 'disconnected' | 'error'
+
+/** Response body of POST /index/rebuild. */
+export interface IndexRebuildResponse {
+  ok: boolean
+  chunksIndexed: number
+}
+
+/** Overall backend connectivity from the frontend's perspective. */
+export type BackendStatus = 'connected' | 'unreachable' | 'checking'
