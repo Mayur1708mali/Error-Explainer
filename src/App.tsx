@@ -3,9 +3,13 @@ import { ResultPanel } from './components/ResultPanel'
 import { HistorySidebar } from './components/HistorySidebar'
 import { OllamaStatusBadge } from './components/OllamaStatusBadge'
 import { SettingsPanel } from './components/SettingsPanel'
+import { useStatus } from './hooks/useStatus'
 import './App.css'
 
 function App() {
+  // Poll backend + Ollama health and mirror it into the status badge.
+  useStatus()
+
   return (
     <div className="app">
       <header className="app__header">
