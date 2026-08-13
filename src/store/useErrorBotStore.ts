@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { AnalyzeResponse, ChatModel, HistoryItem, OllamaStatus } from '@shared/types'
+import type { AnalyzeResponse, BackendStatus, ChatModel, HistoryItem, OllamaStatus, StatusResponse } from '@shared/types'
 import { DEFAULT_CHAT_MODEL } from '@shared/types'
 import { fetchHistory, deleteHistoryItemApi, clearHistoryApi } from '../lib/api'
 
@@ -23,6 +23,10 @@ interface ErrorBotState {
   historySearch: string
   /** Connectivity state of the local Ollama server. */
   ollamaStatus: OllamaStatus
+  /** Full status response from backend (models info). */
+  statusData: StatusResponse | null
+  /** Whether the backend server itself is reachable. */
+  backendStatus: BackendStatus
   /** Chat model selected in settings, passed through to /analyze. */
   selectedModel: ChatModel
 
@@ -39,6 +43,8 @@ interface ErrorBotState {
   setHistorySearch: (keyword: string) => void
   fetchHistoryFromBackend: () => Promise<void>
   setOllamaStatus: (status: OllamaStatus) => void
+  setStatusData: (data: StatusResponse | null) => void
+  setBackendStatus: (status: BackendStatus) => void
   setSelectedModel: (model: ChatModel) => void
   reset: () => void
 }
@@ -52,6 +58,8 @@ const initialState = {
   historyLoading: false,
   historySearch: '',
   ollamaStatus: 'unknown' as OllamaStatus,
+  statusData: null as StatusResponse | null,
+  backendStatus: 'checking' as BackendStatus,
   selectedModel: DEFAULT_CHAT_MODEL as ChatModel,
 }
 
@@ -120,6 +128,10 @@ export const useErrorBotStore = create<ErrorBotState>((set, get) => ({
   },
 
   setOllamaStatus: (status) => set({ ollamaStatus: status }),
+
+  setStatusData: (data) => set({ statusData: data }),
+
+  setBackendStatus: (status) => set({ backendStatus: status }),
 
   setSelectedModel: (model) => set({ selectedModel: model }),
 
