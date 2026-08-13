@@ -1,12 +1,22 @@
 import Fastify from 'fastify'
+import cors from '@fastify/cors'
 import type { AnalyzeRequest } from '../../shared/types'
 import { mockAnalyzeResponse } from './mockAnalyze'
 
 const PORT = Number(process.env.PORT ?? 3001)
 const HOST = process.env.HOST ?? '127.0.0.1'
 
-export function buildServer() {
+// The frontend's local dev origin (Vite). Override via CORS_ORIGIN if needed.
+const CORS_ORIGIN = process.env.CORS_ORIGIN ?? 'http://localhost:5173'
+
+export async function buildServer() {
   const app = Fastify({ logger: true })
+
+  // Allow the frontend dev origin to call the API from the browser.
+  await app.register(cors, {
+    origin: CORS_ORIGIN,
+    methods: ['GET', 'POST'],
+  })
 
   // Health/connectivity check. Phase 4 will make this reflect real Ollama state.
   app.get('/status', async () => {
@@ -27,7 +37,7 @@ export function buildServer() {
 }
 
 async function start() {
-  const app = buildServer()
+  const app = await buildServer()
   try {
     await app.listen({ port: PORT, host: HOST })
   } catch (err) {
