@@ -1,11 +1,18 @@
 import { create } from 'zustand'
 import type { AnalyzeResponse, HistoryItem, OllamaStatus } from '@shared/types'
 
+/** Lifecycle of an /analyze request, mirrored from the TanStack Query mutation. */
+export type AnalyzeStatus = 'idle' | 'pending' | 'error'
+
 interface ErrorBotState {
   /** The current textarea contents (the error / stack trace being edited). */
   currentInput: string
   /** The result of the most recent analysis, or null if none yet. */
   currentResult: AnalyzeResponse | null
+  /** Status of the in-flight (or last) analyze request. */
+  analyzeStatus: AnalyzeStatus
+  /** Error message from the last failed analyze request, if any. */
+  analyzeError: string | null
   /** Past analyses, most recent first. */
   historyList: HistoryItem[]
   /** Connectivity state of the local Ollama server. */
@@ -15,8 +22,8 @@ interface ErrorBotState {
   setCurrentInput: (input: string) => void
   clearCurrentInput: () => void
   setCurrentResult: (result: AnalyzeResponse | null) => void
-  /** Submit handler stub — no backend call yet (Phase 3 will wire this up). */
-  submitCurrentInput: () => void
+  setAnalyzeStatus: (status: AnalyzeStatus) => void
+  setAnalyzeError: (message: string | null) => void
   addHistoryItem: (item: HistoryItem) => void
   loadHistoryItem: (id: string) => void
   removeHistoryItem: (id: string) => void
@@ -28,6 +35,8 @@ interface ErrorBotState {
 const initialState = {
   currentInput: '',
   currentResult: null as AnalyzeResponse | null,
+  analyzeStatus: 'idle' as AnalyzeStatus,
+  analyzeError: null as string | null,
   historyList: [] as HistoryItem[],
   ollamaStatus: 'unknown' as OllamaStatus,
 }
@@ -41,13 +50,9 @@ export const useErrorBotStore = create<ErrorBotState>((set, get) => ({
 
   setCurrentResult: (result) => set({ currentResult: result }),
 
-  submitCurrentInput: () => {
-    const input = get().currentInput.trim()
-    if (!input) return
-    // No backend call yet. Phase 3 wires this to POST /analyze via TanStack Query.
-    // For now we just acknowledge the submission by clearing any stale result.
-    set({ currentResult: null })
-  },
+  setAnalyzeStatus: (status) => set({ analyzeStatus: status }),
+
+  setAnalyzeError: (message) => set({ analyzeError: message }),
 
   addHistoryItem: (item) =>
     set((state) => ({

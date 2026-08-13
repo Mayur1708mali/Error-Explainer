@@ -1,25 +1,30 @@
 import { useErrorBotStore } from '../store/useErrorBotStore'
+import { useAnalyze } from '../hooks/useAnalyze'
 
-/** Error/stack-trace input area with a submit button, wired to the store. */
+/** Error/stack-trace input area with a submit button, wired to POST /analyze. */
 export function InputPanel() {
   const currentInput = useErrorBotStore((s) => s.currentInput)
   const setCurrentInput = useErrorBotStore((s) => s.setCurrentInput)
   const clearCurrentInput = useErrorBotStore((s) => s.clearCurrentInput)
-  const submitCurrentInput = useErrorBotStore((s) => s.submitCurrentInput)
+  const analyze = useAnalyze()
 
-  const canSubmit = currentInput.trim().length > 0
+  const canSubmit = currentInput.trim().length > 0 && !analyze.isPending
+
+  const submit = () => {
+    if (!canSubmit) return
+    analyze.mutate(currentInput.trim())
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!canSubmit) return
-    submitCurrentInput()
+    submit()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Cmd/Ctrl + Enter submits.
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
       e.preventDefault()
-      if (canSubmit) submitCurrentInput()
+      submit()
     }
   }
 
@@ -42,12 +47,12 @@ export function InputPanel() {
           type="button"
           className="input-panel__clear"
           onClick={clearCurrentInput}
-          disabled={!currentInput}
+          disabled={!currentInput || analyze.isPending}
         >
           Clear
         </button>
         <button type="submit" className="input-panel__submit" disabled={!canSubmit}>
-          Analyze
+          {analyze.isPending ? 'Analyzing…' : 'Analyze'}
           <span className="input-panel__hint">⌘↵</span>
         </button>
       </div>

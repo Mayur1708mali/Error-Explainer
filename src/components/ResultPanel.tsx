@@ -1,14 +1,32 @@
 import { useErrorBotStore } from '../store/useErrorBotStore'
-import { EmptyState } from './states'
+import { EmptyState, ErrorState, LoadingState } from './states'
 
 function confidenceLabel(confidence: number): string {
   const pct = Math.round(confidence * 100)
   return `${pct}% confidence`
 }
 
-/** Displays the current analysis result, or an empty state when there is none. */
+/** Displays the current analysis result, or loading/error/empty states. */
 export function ResultPanel() {
   const result = useErrorBotStore((s) => s.currentResult)
+  const analyzeStatus = useErrorBotStore((s) => s.analyzeStatus)
+  const analyzeError = useErrorBotStore((s) => s.analyzeError)
+
+  if (analyzeStatus === 'pending') {
+    return (
+      <div className="result-panel">
+        <LoadingState message="Analyzing…" hint="Sending your error to the analyzer." />
+      </div>
+    )
+  }
+
+  if (analyzeStatus === 'error') {
+    return (
+      <div className="result-panel">
+        <ErrorState title="Analysis failed" error={analyzeError ?? undefined} />
+      </div>
+    )
+  }
 
   if (!result) {
     return (
