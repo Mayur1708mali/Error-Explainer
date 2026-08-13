@@ -3,32 +3,45 @@
  * Keep this framework-agnostic so it can be imported from either side.
  */
 
-/** A single cited documentation source backing an analysis. */
-export interface Source {
-  title: string
-  url: string
-  snippet: string
-}
+// AnalyzeResponse / Source are defined by the Zod schema so there is a single
+// source of truth for both runtime validation and the TypeScript types.
+import type { AnalyzeResponse, Source } from './schema'
+export type { AnalyzeResponse, Source }
 
-/**
- * The structured result of analyzing an error / stack trace.
- * Mirrors the AnalyzeResponse the backend will eventually return
- * (see Phase 4 — validated with Zod).
- */
-export interface AnalyzeResponse {
-  language: string
-  framework: string | null
-  rootCause: string
-  fixSteps: string[]
-  /** Model confidence, 0..1. */
-  confidence: number
-  sources: Source[]
-}
+/** Chat model that can be selected for analysis. Restricted to what we ship. */
+export type ChatModel = 'qwen2.5-coder:3b'
+
+/** The chat model options exposed in the settings picker. */
+export const CHAT_MODELS: ChatModel[] = ['qwen2.5-coder:3b']
+
+/** Default chat model used when none is specified. */
+export const DEFAULT_CHAT_MODEL: ChatModel = 'qwen2.5-coder:3b'
+
+/** Models that must be pulled in Ollama for the app to work. */
+export const REQUIRED_MODELS = ['qwen2.5-coder:3b', 'nomic-embed-text'] as const
 
 /** The request body sent to POST /analyze. */
 export interface AnalyzeRequest {
   /** The raw error / stack trace to analyze. */
   input: string
+  /** Which chat model to use. Defaults to DEFAULT_CHAT_MODEL server-side. */
+  model?: ChatModel
+}
+
+/** Presence of a single required model in Ollama. */
+export interface ModelStatus {
+  name: string
+  present: boolean
+}
+
+/** Response body of GET /status. */
+export interface StatusResponse {
+  /** True when Ollama is reachable and all required models are present. */
+  ok: boolean
+  /** Whether the Ollama server responded at all. */
+  ollamaReachable: boolean
+  /** Presence of each required model. */
+  models: ModelStatus[]
 }
 
 /** A past analysis stored in history. */
