@@ -1,0 +1,17 @@
+# Build outputs
+dist
+build
+coverage
+
+# Dependencies
+node_modules
+
+# Generated / auto-formatted files
+*.d.ts
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Static assets
+public
+src/assets
