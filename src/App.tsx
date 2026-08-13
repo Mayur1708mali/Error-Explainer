@@ -17,6 +17,9 @@ function App() {
 
   return (
     <div className="app">
+      <a href="#error-input" className="sr-only">
+        Skip to main content
+      </a>
       <OnboardingOverlay />
       <BackendStatusBanner />
 
@@ -36,11 +39,11 @@ function App() {
       <div className="app__body">
         <HistorySidebar />
 
-        <main className="app__main">
-          <section className="app__pane app__pane--input">
+        <main className="app__main" aria-label="Analysis workspace">
+          <section className="app__pane app__pane--input" aria-label="Error input">
             <InputPanel />
           </section>
-          <section className="app__pane app__pane--result">
+          <section className="app__pane app__pane--result" aria-label="Analysis results">
             <ResultPanel />
           </section>
         </main>

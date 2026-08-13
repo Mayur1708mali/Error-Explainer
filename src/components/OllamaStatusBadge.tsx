@@ -67,7 +67,11 @@ export function OllamaStatusBadge() {
 
   return (
     <div className="ollama-badge-wrapper">
-      <span className={`ollama-badge ollama-badge--${status}`}>
+      <span
+        className={`ollama-badge ollama-badge--${status}`}
+        role="status"
+        aria-label={LABELS[status]}
+      >
         <span className="ollama-badge__dot" aria-hidden="true" />
         {LABELS[status]}
       </span>

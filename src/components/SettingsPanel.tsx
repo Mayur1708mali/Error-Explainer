@@ -51,11 +51,14 @@ export function SettingsPanel() {
           className="settings__rebuild-btn"
           onClick={handleRebuildIndex}
           disabled={rebuilding}
+          aria-label={rebuilding ? 'Rebuilding document index' : 'Rebuild document index'}
         >
           {rebuilding ? 'Rebuilding…' : 'Rebuild doc index'}
         </button>
         {rebuildResult && (
-          <span className="settings__rebuild-result">{rebuildResult}</span>
+          <span className="settings__rebuild-result" role="status" aria-live="polite">
+            {rebuildResult}
+          </span>
         )}
       </div>
     </div>

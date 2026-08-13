@@ -48,12 +48,18 @@ export function InputPanel() {
           className="input-panel__clear"
           onClick={clearCurrentInput}
           disabled={!currentInput || analyze.isPending}
+          aria-label="Clear input"
         >
           Clear
         </button>
-        <button type="submit" className="input-panel__submit" disabled={!canSubmit}>
+        <button
+          type="submit"
+          className="input-panel__submit"
+          disabled={!canSubmit}
+          aria-label={analyze.isPending ? 'Analyzing in progress' : 'Analyze error (⌘ Enter)'}
+        >
           {analyze.isPending ? 'Analyzing…' : 'Analyze'}
-          <span className="input-panel__hint">⌘↵</span>
+          <span className="input-panel__hint" aria-hidden="true">⌘↵</span>
         </button>
       </div>
     </form>

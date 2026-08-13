@@ -52,7 +52,12 @@ export function HistorySidebar() {
       <div className="history__header">
         <h2 className="history__title">History</h2>
         {historyList.length > 0 ? (
-          <button type="button" className="history__clear" onClick={clearHistory}>
+          <button
+            type="button"
+            className="history__clear"
+            onClick={clearHistory}
+            aria-label="Clear all history"
+          >
             Clear all
           </button>
         ) : null}
