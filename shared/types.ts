@@ -25,6 +25,12 @@ export interface AnalyzeResponse {
   sources: Source[]
 }
 
+/** The request body sent to POST /analyze. */
+export interface AnalyzeRequest {
+  /** The raw error / stack trace to analyze. */
+  input: string
+}
+
 /** A past analysis stored in history. */
 export interface HistoryItem {
   id: string
