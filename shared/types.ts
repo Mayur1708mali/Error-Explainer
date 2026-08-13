@@ -54,5 +54,13 @@ export interface HistoryItem {
   createdAt: number
 }
 
+/** Paginated response from GET /history. */
+export interface HistoryPage {
+  items: HistoryItem[]
+  total: number
+  page: number
+  pageSize: number
+}
+
 /** Connectivity state of the local Ollama server. */
 export type OllamaStatus = 'unknown' | 'checking' | 'connected' | 'disconnected' | 'error'

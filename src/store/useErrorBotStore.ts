@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { AnalyzeResponse, ChatModel, HistoryItem, OllamaStatus } from '@shared/types'
 import { DEFAULT_CHAT_MODEL } from '@shared/types'
+import { fetchHistory, deleteHistoryItemApi, clearHistoryApi } from '../lib/api'
 
 /** Lifecycle of an /analyze request, mirrored from the TanStack Query mutation. */
 export type AnalyzeStatus = 'idle' | 'pending' | 'error'
@@ -16,6 +17,10 @@ interface ErrorBotState {
   analyzeError: string | null
   /** Past analyses, most recent first. */
   historyList: HistoryItem[]
+  /** Whether history is currently being loaded from the backend. */
+  historyLoading: boolean
+  /** Search keyword for filtering history. */
+  historySearch: string
   /** Connectivity state of the local Ollama server. */
   ollamaStatus: OllamaStatus
   /** Chat model selected in settings, passed through to /analyze. */
@@ -31,6 +36,8 @@ interface ErrorBotState {
   loadHistoryItem: (id: string) => void
   removeHistoryItem: (id: string) => void
   clearHistory: () => void
+  setHistorySearch: (keyword: string) => void
+  fetchHistoryFromBackend: () => Promise<void>
   setOllamaStatus: (status: OllamaStatus) => void
   setSelectedModel: (model: ChatModel) => void
   reset: () => void
@@ -42,6 +49,8 @@ const initialState = {
   analyzeStatus: 'idle' as AnalyzeStatus,
   analyzeError: null as string | null,
   historyList: [] as HistoryItem[],
+  historyLoading: false,
+  historySearch: '',
   ollamaStatus: 'unknown' as OllamaStatus,
   selectedModel: DEFAULT_CHAT_MODEL as ChatModel,
 }
@@ -70,12 +79,45 @@ export const useErrorBotStore = create<ErrorBotState>((set, get) => ({
     set({ currentInput: item.input, currentResult: item.result })
   },
 
-  removeHistoryItem: (id) =>
+  removeHistoryItem: async (id) => {
+    // Optimistically remove from UI, then call backend.
     set((state) => ({
       historyList: state.historyList.filter((h) => h.id !== id),
-    })),
+    }))
+    try {
+      await deleteHistoryItemApi(id)
+    } catch {
+      // Refetch to reconcile if the delete failed.
+      get().fetchHistoryFromBackend()
+    }
+  },
 
-  clearHistory: () => set({ historyList: [] }),
+  clearHistory: async () => {
+    set({ historyList: [] })
+    try {
+      await clearHistoryApi()
+    } catch {
+      get().fetchHistoryFromBackend()
+    }
+  },
+
+  setHistorySearch: (keyword) => {
+    set({ historySearch: keyword })
+    get().fetchHistoryFromBackend()
+  },
+
+  fetchHistoryFromBackend: async () => {
+    set({ historyLoading: true })
+    try {
+      const keyword = get().historySearch
+      const data = await fetchHistory(1, 50, keyword || undefined)
+      set({ historyList: data.items })
+    } catch {
+      // Silently ignore fetch errors — the sidebar will just show stale data.
+    } finally {
+      set({ historyLoading: false })
+    }
+  },
 
   setOllamaStatus: (status) => set({ ollamaStatus: status }),
 

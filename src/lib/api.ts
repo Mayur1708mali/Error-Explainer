@@ -1,4 +1,4 @@
-import type { AnalyzeRequest, AnalyzeResponse, ChatModel, StatusResponse } from '@shared/types'
+import type { AnalyzeRequest, AnalyzeResponse, ChatModel, HistoryItem, HistoryPage, StatusResponse } from '@shared/types'
 
 /** Base URL of the backend API. Override with VITE_API_BASE_URL. */
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001'
@@ -49,4 +49,47 @@ export async function fetchStatus(): Promise<StatusResponse> {
     throw new ApiError(await parseError(res), res.status)
   }
   return (await res.json()) as StatusResponse
+}
+
+/** GET /history — paginated history list, optionally filtered by keyword. */
+export async function fetchHistory(
+  page = 1,
+  pageSize = 20,
+  keyword?: string,
+): Promise<HistoryPage> {
+  const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
+  if (keyword?.trim()) params.set('q', keyword.trim())
+
+  const res = await fetch(`${API_BASE_URL}/history?${params}`)
+  if (!res.ok) {
+    throw new ApiError(await parseError(res), res.status)
+  }
+  return (await res.json()) as HistoryPage
+}
+
+/** GET /history/:id — fetch a single history item. */
+export async function fetchHistoryItem(id: string): Promise<HistoryItem> {
+  const res = await fetch(`${API_BASE_URL}/history/${encodeURIComponent(id)}`)
+  if (!res.ok) {
+    throw new ApiError(await parseError(res), res.status)
+  }
+  return (await res.json()) as HistoryItem
+}
+
+/** DELETE /history/:id — delete a single history item. */
+export async function deleteHistoryItemApi(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/history/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  })
+  if (!res.ok) {
+    throw new ApiError(await parseError(res), res.status)
+  }
+}
+
+/** DELETE /history — clear all history. */
+export async function clearHistoryApi(): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/history`, { method: 'DELETE' })
+  if (!res.ok) {
+    throw new ApiError(await parseError(res), res.status)
+  }
 }
