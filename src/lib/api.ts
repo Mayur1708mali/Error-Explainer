@@ -1,4 +1,4 @@
-import type { AnalyzeRequest, AnalyzeResponse, ChatModel, HistoryItem, HistoryPage, StatusResponse } from '@shared/types'
+import type { AnalyzeRequest, AnalyzeResponse, ChatModel, HistoryItem, HistoryPage, IndexRebuildResponse, StatusResponse } from '@shared/types'
 
 /** Base URL of the backend API. Override with VITE_API_BASE_URL. */
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001'
@@ -92,4 +92,18 @@ export async function clearHistoryApi(): Promise<void> {
   if (!res.ok) {
     throw new ApiError(await parseError(res), res.status)
   }
+}
+
+/** POST /index/rebuild — trigger a full doc index rebuild. */
+export async function rebuildIndexApi(): Promise<IndexRebuildResponse> {
+  let res: Response
+  try {
+    res = await fetch(`${API_BASE_URL}/index/rebuild`, { method: 'POST' })
+  } catch {
+    throw new ApiError('Could not reach the server. Is the backend running?')
+  }
+  if (!res.ok) {
+    throw new ApiError(await parseError(res), res.status)
+  }
+  return (await res.json()) as IndexRebuildResponse
 }
