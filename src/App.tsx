@@ -2,6 +2,7 @@ import { InputPanel } from './components/InputPanel'
 import { ResultPanel } from './components/ResultPanel'
 import { HistorySidebar } from './components/HistorySidebar'
 import { OllamaStatusBadge } from './components/OllamaStatusBadge'
+import { SettingsPanel } from './components/SettingsPanel'
 import './App.css'
 
 function App() {
@@ -14,7 +15,10 @@ function App() {
           </span>
           <h1 className="app__title">error-bot</h1>
         </div>
-        <OllamaStatusBadge />
+        <div className="app__header-actions">
+          <SettingsPanel />
+          <OllamaStatusBadge />
+        </div>
       </header>
 
       <div className="app__body">

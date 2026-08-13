@@ -1,4 +1,4 @@
-import type { AnalyzeRequest, AnalyzeResponse } from '@shared/types'
+import type { AnalyzeRequest, AnalyzeResponse, ChatModel, StatusResponse } from '@shared/types'
 
 /** Base URL of the backend API. Override with VITE_API_BASE_URL. */
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001'
@@ -24,8 +24,8 @@ async function parseError(res: Response): Promise<string> {
 }
 
 /** POST /analyze — send an error / stack trace, get back an analysis. */
-export async function analyzeError(input: string): Promise<AnalyzeResponse> {
-  const body: AnalyzeRequest = { input }
+export async function analyzeError(input: string, model?: ChatModel): Promise<AnalyzeResponse> {
+  const body: AnalyzeRequest = { input, model }
   let res: Response
   try {
     res = await fetch(`${API_BASE_URL}/analyze`, {
@@ -40,4 +40,13 @@ export async function analyzeError(input: string): Promise<AnalyzeResponse> {
     throw new ApiError(await parseError(res), res.status)
   }
   return (await res.json()) as AnalyzeResponse
+}
+
+/** GET /status — backend + Ollama health and required-model presence. */
+export async function fetchStatus(): Promise<StatusResponse> {
+  const res = await fetch(`${API_BASE_URL}/status`)
+  if (!res.ok) {
+    throw new ApiError(await parseError(res), res.status)
+  }
+  return (await res.json()) as StatusResponse
 }

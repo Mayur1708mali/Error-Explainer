@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import type { AnalyzeResponse, HistoryItem, OllamaStatus } from '@shared/types'
+import type { AnalyzeResponse, ChatModel, HistoryItem, OllamaStatus } from '@shared/types'
+import { DEFAULT_CHAT_MODEL } from '@shared/types'
 
 /** Lifecycle of an /analyze request, mirrored from the TanStack Query mutation. */
 export type AnalyzeStatus = 'idle' | 'pending' | 'error'
@@ -17,6 +18,8 @@ interface ErrorBotState {
   historyList: HistoryItem[]
   /** Connectivity state of the local Ollama server. */
   ollamaStatus: OllamaStatus
+  /** Chat model selected in settings, passed through to /analyze. */
+  selectedModel: ChatModel
 
   // ── Actions ──────────────────────────────────────────────────────────────
   setCurrentInput: (input: string) => void
@@ -29,6 +32,7 @@ interface ErrorBotState {
   removeHistoryItem: (id: string) => void
   clearHistory: () => void
   setOllamaStatus: (status: OllamaStatus) => void
+  setSelectedModel: (model: ChatModel) => void
   reset: () => void
 }
 
@@ -39,6 +43,7 @@ const initialState = {
   analyzeError: null as string | null,
   historyList: [] as HistoryItem[],
   ollamaStatus: 'unknown' as OllamaStatus,
+  selectedModel: DEFAULT_CHAT_MODEL as ChatModel,
 }
 
 export const useErrorBotStore = create<ErrorBotState>((set, get) => ({
@@ -73,6 +78,8 @@ export const useErrorBotStore = create<ErrorBotState>((set, get) => ({
   clearHistory: () => set({ historyList: [] }),
 
   setOllamaStatus: (status) => set({ ollamaStatus: status }),
+
+  setSelectedModel: (model) => set({ selectedModel: model }),
 
   reset: () => set({ ...initialState }),
 }))

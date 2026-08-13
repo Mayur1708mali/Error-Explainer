@@ -12,9 +12,10 @@ export function useAnalyze() {
   const setAnalyzeStatus = useErrorBotStore((s) => s.setAnalyzeStatus)
   const setAnalyzeError = useErrorBotStore((s) => s.setAnalyzeError)
   const addHistoryItem = useErrorBotStore((s) => s.addHistoryItem)
+  const selectedModel = useErrorBotStore((s) => s.selectedModel)
 
   return useMutation<AnalyzeResponse, Error, string>({
-    mutationFn: (input: string) => analyzeError(input),
+    mutationFn: (input: string) => analyzeError(input, selectedModel),
     onMutate: () => {
       setAnalyzeStatus('pending')
       setAnalyzeError(null)

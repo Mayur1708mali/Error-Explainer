@@ -26,6 +26,40 @@
   line-height: 1;
 }
 
+.app__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ── Settings ─────────────────────────────────────────────────────────────── */
+.settings {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings__label {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.settings__select {
+  font-size: 13px;
+  font-family: var(--mono);
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
 .app__title {
   font-size: 22px;
   margin: 0;
