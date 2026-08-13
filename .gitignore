@@ -12,9 +12,13 @@ dist
 dist-ssr
 *.local
 
-# Databases and generated RAG data (scraped docs, chunks, sqlite db)
+# Databases and generated RAG data (sqlite db is rebuilt from chunks.json)
 *.db
-backend/data/
+*.db-shm
+*.db-wal
+
+# The pre-indexed doc corpus (chunks.json + docs/) ships with the repo.
+# Only the generated SQLite database is ignored above.
 
 # Editor directories and files
 .vscode/*
