@@ -45,10 +45,30 @@ function extractJson(raw: string): string {
   return text
 }
 
+/**
+ * Fill safe defaults for fields small models sometimes omit, but only when the
+ * core fields (language + rootCause) are present. This recovers partial output
+ * without fabricating the substance of the analysis.
+ */
+function normalizeCandidate(value: unknown): unknown {
+  if (typeof value !== 'object' || value === null) return value
+  const obj = value as Record<string, unknown>
+  if (typeof obj.language !== 'string' || typeof obj.rootCause !== 'string') return value
+
+  return {
+    language: obj.language,
+    framework: typeof obj.framework === 'string' ? obj.framework : null,
+    rootCause: obj.rootCause,
+    fixSteps: Array.isArray(obj.fixSteps) ? obj.fixSteps : [],
+    confidence: typeof obj.confidence === 'number' ? obj.confidence : 0.5,
+    sources: Array.isArray(obj.sources) ? obj.sources : [],
+  }
+}
+
 /** Parse + validate a raw model response against the AnalyzeResponse schema. */
 function parseAndValidate(raw: string): AnalyzeResponse {
   const json = extractJson(raw)
-  const parsed = JSON.parse(json) as unknown
+  const parsed = normalizeCandidate(JSON.parse(json))
   return analyzeResponseSchema.parse(parsed)
 }
 
