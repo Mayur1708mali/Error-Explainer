@@ -11,7 +11,7 @@ import type { RetrievedChunk } from './rag/retrieve'
  * farther than this (e.g. cross-language fallback matches) are dropped so we
  * don't attach misleading citations or over-state confidence.
  */
-const MAX_RELEVANT_DISTANCE = 24
+const MAX_RELEVANT_DISTANCE = 20
 
 /** Format retrieved chunks into a compact context block for the prompt. */
 function buildContext(chunks: RetrievedChunk[]): string {
@@ -62,7 +62,11 @@ export async function runAnalysis(input: string, model: ChatModel): Promise<Anal
   // RAG: detect the language (heuristics), retrieve relevant doc chunks, and
   // pass them to the model as grounding context.
   const detected = detectLanguage(input)
-  const retrieved = await retrieve(input, { language: detected?.language, topK: 4 })
+  // Only retrieve when we have a detected language to filter by. Without one
+  // (e.g. garbage / non-stack-trace input) any matches would be untrustworthy.
+  const retrieved = detected?.language
+    ? await retrieve(input, { language: detected.language, topK: 4 })
+    : []
 
   // Keep only chunks close enough to be genuinely relevant.
   const relevant = retrieved.filter((c) => c.distance <= MAX_RELEVANT_DISTANCE)

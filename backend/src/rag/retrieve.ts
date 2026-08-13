@@ -65,11 +65,11 @@ export async function retrieve(
     return conn.prepare(sql).all(...params) as RetrievedChunk[]
   }
 
-  let rows = runQuery(opts.language ?? undefined)
-  if (rows.length === 0 && opts.language) {
-    rows = runQuery(undefined)
-  }
-  return rows
+  // Strict language filtering: we do NOT fall back to an unfiltered search,
+  // because cross-language matches produce misleading citations (e.g. a Java
+  // trace matching JS/Python docs). Callers get [] when the detected language
+  // has no indexed docs.
+  return runQuery(opts.language ?? undefined)
 }
 
 /** Build a short snippet (single line, trimmed) from chunk text. */

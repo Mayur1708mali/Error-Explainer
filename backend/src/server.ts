@@ -4,9 +4,14 @@ import type { AnalyzeRequest, ChatModel, ModelStatus, StatusResponse } from '../
 import { CHAT_MODELS, DEFAULT_CHAT_MODEL, REQUIRED_MODELS } from '../../shared/types'
 import { hasModel, isReachable, listModels } from './ollama'
 import { runAnalysis, AnalyzeError } from './analyze'
+import { saveAnalysis } from './history'
 
 const PORT = Number(process.env.PORT ?? 3001)
 const HOST = process.env.HOST ?? '127.0.0.1'
+
+/** Input length bounds for /analyze. */
+const MIN_INPUT_LENGTH = 8
+const MAX_INPUT_LENGTH = 20_000
 
 // The frontend's local dev origin (Vite). Override via CORS_ORIGIN if needed.
 const CORS_ORIGIN = process.env.CORS_ORIGIN ?? 'http://localhost:5173'
@@ -63,10 +68,31 @@ export async function buildServer() {
         .send({ error: 'Field "input" is required and must be a non-empty string.' })
     }
 
+    const trimmed = input.trim()
+    // Edge case: too short to be a real error / stack trace (likely garbage).
+    if (trimmed.length < MIN_INPUT_LENGTH) {
+      return reply.status(400).send({
+        error: `Input is too short to analyze (need at least ${MIN_INPUT_LENGTH} characters). Paste the full error or stack trace.`,
+      })
+    }
+    // Edge case: guard against pathologically large inputs.
+    if (trimmed.length > MAX_INPUT_LENGTH) {
+      return reply.status(413).send({
+        error: `Input is too large (max ${MAX_INPUT_LENGTH} characters). Paste only the relevant error and stack trace.`,
+      })
+    }
+
     const model = isValidModel(request.body?.model) ? request.body.model : DEFAULT_CHAT_MODEL
 
     try {
-      return await runAnalysis(input.trim(), model)
+      const result = await runAnalysis(trimmed, model)
+      // Persist the validated result (non-fatal on failure).
+      try {
+        saveAnalysis(trimmed, result)
+      } catch (persistErr) {
+        request.log.warn({ persistErr }, 'failed to persist analysis')
+      }
+      return result
     } catch (err) {
       if (err instanceof AnalyzeError) {
         request.log.warn({ err }, 'analysis validation failed')
