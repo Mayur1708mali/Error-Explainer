@@ -6,11 +6,28 @@ import { detectLanguage } from './detect'
 import { retrieve, toSnippet, toSources } from './rag/retrieve'
 import type { RetrievedChunk } from './rag/retrieve'
 
+/**
+ * Max L2 distance for a retrieved chunk to be considered relevant. Chunks
+ * farther than this (e.g. cross-language fallback matches) are dropped so we
+ * don't attach misleading citations or over-state confidence.
+ */
+const MAX_RELEVANT_DISTANCE = 24
+
 /** Format retrieved chunks into a compact context block for the prompt. */
 function buildContext(chunks: RetrievedChunk[]): string {
   return chunks
     .map((c, i) => `[${i + 1}] ${c.title} (${c.url})\n${toSnippet(c.text, 600)}`)
     .join('\n\n')
+}
+
+/**
+ * Adjust the model's confidence. When no relevant sources were found we can't
+ * corroborate the answer, so we scale confidence down and cap it.
+ */
+export function adjustConfidence(modelConfidence: number, hasRelevantSources: boolean): number {
+  const base = Math.max(0, Math.min(1, modelConfidence))
+  if (hasRelevantSources) return Number(base.toFixed(2))
+  return Number(Math.min(base * 0.6, 0.45).toFixed(2))
 }
 
 /** Strip accidental ``` fences and extract the outermost JSON object. */
@@ -46,15 +63,21 @@ export async function runAnalysis(input: string, model: ChatModel): Promise<Anal
   // pass them to the model as grounding context.
   const detected = detectLanguage(input)
   const retrieved = await retrieve(input, { language: detected?.language, topK: 4 })
-  const context = retrieved.length > 0 ? buildContext(retrieved) : undefined
-  const citations = toSources(retrieved)
+
+  // Keep only chunks close enough to be genuinely relevant.
+  const relevant = retrieved.filter((c) => c.distance <= MAX_RELEVANT_DISTANCE)
+  const context = relevant.length > 0 ? buildContext(relevant) : undefined
+  const citations = toSources(relevant)
 
   const messages = buildAnalyzeMessages(input, context)
 
-  const finalize = (result: AnalyzeResponse): AnalyzeResponse => {
+  const finalize = (result: AnalyzeResponse): AnalyzeResponse => ({
+    ...result,
     // Prefer real retrieved citations over anything the model invented.
-    return citations.length > 0 ? { ...result, sources: citations } : result
-  }
+    sources: citations.length > 0 ? citations : [],
+    // Downgrade confidence when we couldn't corroborate with sources.
+    confidence: adjustConfidence(result.confidence, citations.length > 0),
+  })
 
   // Attempt 1
   const first = await chat(model, messages, { format: 'json' })
