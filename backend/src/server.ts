@@ -28,7 +28,9 @@ export async function buildServer() {
   app.post<{ Body: AnalyzeRequest }>('/analyze', async (request, reply) => {
     const input = request.body?.input
     if (typeof input !== 'string' || input.trim().length === 0) {
-      return reply.status(400).send({ error: 'Field "input" is required and must be a non-empty string.' })
+      return reply
+        .status(400)
+        .send({ error: 'Field "input" is required and must be a non-empty string.' })
     }
     return mockAnalyzeResponse
   })
