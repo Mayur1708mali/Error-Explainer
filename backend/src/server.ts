@@ -168,4 +168,11 @@ async function start() {
   }
 }
 
-start()
+// Only start the server when this module is run directly (not imported by tests).
+const isDirectRun =
+  process.argv[1] &&
+  (process.argv[1].endsWith('/server.ts') || process.argv[1].endsWith('/server.js'))
+
+if (isDirectRun) {
+  start()
+}
