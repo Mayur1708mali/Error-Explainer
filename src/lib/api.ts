@@ -1,6 +1,11 @@
 import type { AnalyzeRequest, AnalyzeResponse, ChatModel, HistoryItem, HistoryPage, IndexRebuildResponse, StatusResponse } from '@shared/types'
 
-/** Base URL of the backend API. Override with VITE_API_BASE_URL. */
+/**
+ * Base URL of the backend API.
+ * - In dev: defaults to http://localhost:3001 (separate Vite + Fastify servers).
+ * - In production: set VITE_API_BASE_URL="" at build time so the frontend uses
+ *   relative URLs (same origin, served by Fastify).
+ */
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001'
 
 /** Thrown when an API request fails; carries the HTTP status when available. */
