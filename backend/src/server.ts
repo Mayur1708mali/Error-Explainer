@@ -1,11 +1,17 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
+import fastifyStatic from '@fastify/static'
+import { existsSync } from 'node:fs'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { AnalyzeRequest, ChatModel, IndexRebuildResponse, ModelStatus, StatusResponse } from '../../shared/types'
 import { CHAT_MODELS, DEFAULT_CHAT_MODEL, REQUIRED_MODELS } from '../../shared/types'
 import { hasModel, isReachable, listModels } from './ollama'
 import { runAnalysis, AnalyzeError } from './analyze'
 import { saveAnalysis, getHistory, getHistoryById, deleteHistoryItem, clearAllHistory } from './history'
 import { rebuildIndex } from './rag/rebuild'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const PORT = Number(process.env.PORT ?? 3001)
 const HOST = process.env.HOST ?? '127.0.0.1'
@@ -16,6 +22,12 @@ const MAX_INPUT_LENGTH = 20_000
 
 // The frontend's local dev origin (Vite). Override via CORS_ORIGIN if needed.
 const CORS_ORIGIN = process.env.CORS_ORIGIN ?? 'http://localhost:5173'
+
+/**
+ * Path to the production frontend build (dist/).
+ * Resolved relative to the repo root (two levels up from backend/src/).
+ */
+const DIST_DIR = resolve(__dirname, '../../dist')
 
 function isValidModel(value: unknown): value is ChatModel {
   return typeof value === 'string' && (CHAT_MODELS as string[]).includes(value)
@@ -154,6 +166,27 @@ export async function buildServer() {
       return reply.status(500).send({ error: message })
     }
   })
+
+  // ── Static frontend (production) ────────────────────────────────────────
+
+  /**
+   * In production, serve the pre-built frontend from dist/.
+   * This makes the app a single process: API + UI on one port.
+   * In development, Vite serves the frontend on a separate port.
+   */
+  if (existsSync(DIST_DIR)) {
+    await app.register(fastifyStatic, {
+      root: DIST_DIR,
+      prefix: '/',
+      // Don't interfere with API routes above
+      wildcard: false,
+    })
+
+    // SPA fallback: serve index.html for any route not matched by the API
+    app.setNotFoundHandler((_request, reply) => {
+      return reply.sendFile('index.html')
+    })
+  }
 
   return app
 }
