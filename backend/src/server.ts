@@ -1,10 +1,11 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
-import type { AnalyzeRequest, ChatModel, ModelStatus, StatusResponse } from '../../shared/types'
+import type { AnalyzeRequest, ChatModel, IndexRebuildResponse, ModelStatus, StatusResponse } from '../../shared/types'
 import { CHAT_MODELS, DEFAULT_CHAT_MODEL, REQUIRED_MODELS } from '../../shared/types'
 import { hasModel, isReachable, listModels } from './ollama'
 import { runAnalysis, AnalyzeError } from './analyze'
 import { saveAnalysis, getHistory, getHistoryById, deleteHistoryItem, clearAllHistory } from './history'
+import { rebuildIndex } from './rag/rebuild'
 
 const PORT = Number(process.env.PORT ?? 3001)
 const HOST = process.env.HOST ?? '127.0.0.1'
@@ -139,6 +140,19 @@ export async function buildServer() {
   app.delete('/history', async () => {
     const count = clearAllHistory()
     return { ok: true, deleted: count }
+  })
+
+  // ── Index endpoints ──────────────────────────────────────────────────────
+
+  /** POST /index/rebuild — rebuild the doc vector index from chunks.json. */
+  app.post('/index/rebuild', async (_request, reply): Promise<IndexRebuildResponse> => {
+    try {
+      const chunksIndexed = await rebuildIndex()
+      return { ok: true, chunksIndexed }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Index rebuild failed.'
+      return reply.status(500).send({ error: message })
+    }
   })
 
   return app
