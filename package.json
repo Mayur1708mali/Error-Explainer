@@ -8,6 +8,8 @@
     "dev:backend": "tsx watch backend/src/server.ts",
     "dev:all": "concurrently -n frontend,backend -c cyan,magenta \"npm:dev\" \"npm:dev:backend\"",
     "build": "tsc -b && vite build",
+    "build:prod": "VITE_API_BASE_URL=\"\" tsc -b && VITE_API_BASE_URL=\"\" vite build",
+    "start": "NODE_ENV=production tsx backend/src/server.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
