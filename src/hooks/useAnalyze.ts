@@ -11,7 +11,7 @@ export function useAnalyze() {
   const setCurrentResult = useErrorBotStore((s) => s.setCurrentResult)
   const setAnalyzeStatus = useErrorBotStore((s) => s.setAnalyzeStatus)
   const setAnalyzeError = useErrorBotStore((s) => s.setAnalyzeError)
-  const addHistoryItem = useErrorBotStore((s) => s.addHistoryItem)
+  const fetchHistoryFromBackend = useErrorBotStore((s) => s.fetchHistoryFromBackend)
   const selectedModel = useErrorBotStore((s) => s.selectedModel)
 
   return useMutation<AnalyzeResponse, Error, string>({
@@ -20,15 +20,11 @@ export function useAnalyze() {
       setAnalyzeStatus('pending')
       setAnalyzeError(null)
     },
-    onSuccess: (result, input) => {
+    onSuccess: (result) => {
       setCurrentResult(result)
       setAnalyzeStatus('idle')
-      addHistoryItem({
-        id: crypto.randomUUID(),
-        input,
-        result,
-        createdAt: Date.now(),
-      })
+      // Refetch history from backend to get the server-persisted item.
+      fetchHistoryFromBackend()
     },
     onError: (error) => {
       setAnalyzeStatus('error')

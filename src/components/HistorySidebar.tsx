@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useErrorBotStore } from '../store/useErrorBotStore'
 import { EmptyState } from './states'
 
@@ -18,9 +19,33 @@ function formatTime(ts: number): string {
 /** Sidebar listing past analyses; clicking one reloads it into the workspace. */
 export function HistorySidebar() {
   const historyList = useErrorBotStore((s) => s.historyList)
+  const historyLoading = useErrorBotStore((s) => s.historyLoading)
+  const historySearch = useErrorBotStore((s) => s.historySearch)
+  const setHistorySearch = useErrorBotStore((s) => s.setHistorySearch)
   const loadHistoryItem = useErrorBotStore((s) => s.loadHistoryItem)
   const removeHistoryItem = useErrorBotStore((s) => s.removeHistoryItem)
   const clearHistory = useErrorBotStore((s) => s.clearHistory)
+  const fetchHistoryFromBackend = useErrorBotStore((s) => s.fetchHistoryFromBackend)
+
+  // Fetch history from backend on mount.
+  const didFetch = useRef(false)
+  useEffect(() => {
+    if (!didFetch.current) {
+      didFetch.current = true
+      fetchHistoryFromBackend()
+    }
+  }, [fetchHistoryFromBackend])
+
+  // Debounce search input.
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  function handleSearchChange(value: string) {
+    // Update the input immediately for responsiveness.
+    useErrorBotStore.setState({ historySearch: value })
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setHistorySearch(value)
+    }, 300)
+  }
 
   return (
     <aside className="history">
@@ -33,8 +58,28 @@ export function HistorySidebar() {
         ) : null}
       </div>
 
-      {historyList.length === 0 ? (
-        <EmptyState title="No history yet" description="Analyzed errors will appear here." />
+      <div className="history__search">
+        <input
+          type="search"
+          className="history__search-input"
+          placeholder="Search history..."
+          value={historySearch}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          aria-label="Search history"
+        />
+      </div>
+
+      {historyLoading && historyList.length === 0 ? (
+        <p className="history__loading">Loading...</p>
+      ) : historyList.length === 0 ? (
+        <EmptyState
+          title={historySearch ? 'No matches' : 'No history yet'}
+          description={
+            historySearch
+              ? 'Try a different search term.'
+              : 'Analyzed errors will appear here.'
+          }
+        />
       ) : (
         <ul className="history__list">
           {historyList.map((item) => (
