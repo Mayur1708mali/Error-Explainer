@@ -4,7 +4,7 @@ import type { AnalyzeRequest, ChatModel, ModelStatus, StatusResponse } from '../
 import { CHAT_MODELS, DEFAULT_CHAT_MODEL, REQUIRED_MODELS } from '../../shared/types'
 import { hasModel, isReachable, listModels } from './ollama'
 import { runAnalysis, AnalyzeError } from './analyze'
-import { saveAnalysis } from './history'
+import { saveAnalysis, getHistory, getHistoryById, deleteHistoryItem, clearAllHistory } from './history'
 
 const PORT = Number(process.env.PORT ?? 3001)
 const HOST = process.env.HOST ?? '127.0.0.1'
@@ -26,7 +26,7 @@ export async function buildServer() {
   // Allow the frontend dev origin to call the API from the browser.
   await app.register(cors, {
     origin: CORS_ORIGIN,
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'DELETE'],
   })
 
   // Real health check: Ollama reachable + required models pulled.
@@ -102,6 +102,43 @@ export async function buildServer() {
       const message = err instanceof Error ? err.message : 'Analysis failed.'
       return reply.status(502).send({ error: `Could not analyze: ${message}` })
     }
+  })
+
+  // ── History endpoints ────────────────────────────────────────────────────
+
+  /** GET /history — paginated list, searchable by keyword. */
+  app.get<{ Querystring: { page?: string; pageSize?: string; q?: string } }>(
+    '/history',
+    async (request) => {
+      const page = Math.max(1, Number(request.query.page) || 1)
+      const pageSize = Math.min(100, Math.max(1, Number(request.query.pageSize) || 20))
+      const keyword = request.query.q?.trim() || undefined
+      return getHistory(page, pageSize, keyword)
+    },
+  )
+
+  /** GET /history/:id — fetch a single history item. */
+  app.get<{ Params: { id: string } }>('/history/:id', async (request, reply) => {
+    const item = getHistoryById(request.params.id)
+    if (!item) {
+      return reply.status(404).send({ error: 'History item not found.' })
+    }
+    return item
+  })
+
+  /** DELETE /history/:id — delete a single history item. */
+  app.delete<{ Params: { id: string } }>('/history/:id', async (request, reply) => {
+    const deleted = deleteHistoryItem(request.params.id)
+    if (!deleted) {
+      return reply.status(404).send({ error: 'History item not found.' })
+    }
+    return { ok: true }
+  })
+
+  /** DELETE /history — clear all history. */
+  app.delete('/history', async () => {
+    const count = clearAllHistory()
+    return { ok: true, deleted: count }
   })
 
   return app
