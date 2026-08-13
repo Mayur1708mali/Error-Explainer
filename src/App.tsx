@@ -5,11 +5,14 @@ import { OllamaStatusBadge } from './components/OllamaStatusBadge'
 import { BackendStatusBanner } from './components/BackendStatusBanner'
 import { SettingsPanel } from './components/SettingsPanel'
 import { useStatus } from './hooks/useStatus'
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import './App.css'
 
 function App() {
   // Poll backend + Ollama health and mirror it into the status badge.
   useStatus()
+  // Register global keyboard shortcuts (Cmd+K for history search).
+  useKeyboardShortcuts()
 
   return (
     <div className="app">

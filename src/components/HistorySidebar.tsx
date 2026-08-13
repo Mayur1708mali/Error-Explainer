@@ -62,7 +62,7 @@ export function HistorySidebar() {
         <input
           type="search"
           className="history__search-input"
-          placeholder="Search history..."
+          placeholder="Search history… (⌘K)"
           value={historySearch}
           onChange={(e) => handleSearchChange(e.target.value)}
           aria-label="Search history"
