@@ -415,6 +415,12 @@
   color: var(--text-h);
 }
 
+.result-panel__heading-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .result-panel__steps {
   margin: 0;
   padding-left: 20px;
@@ -426,6 +432,41 @@
     font-size: 15px;
     line-height: 150%;
     color: var(--text-h);
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+
+.result-panel__step-text {
+  flex: 1 1 auto;
+}
+
+/* ── Copy button ──────────────────────────────────────────────────────────── */
+.copy-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text);
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.15s, border-color 0.15s;
+
+  &:hover {
+    opacity: 1;
+    border-color: var(--border);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    opacity: 1;
   }
 }
 

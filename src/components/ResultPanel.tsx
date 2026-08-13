@@ -1,9 +1,37 @@
+import { useState } from 'react'
 import { useErrorBotStore } from '../store/useErrorBotStore'
 import { EmptyState, ErrorState, LoadingState } from './states'
 
 function confidenceLabel(confidence: number): string {
   const pct = Math.round(confidence * 100)
   return `${pct}% confidence`
+}
+
+/** Copy text to clipboard and briefly show a "Copied" state. */
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      // Fallback: no-op if clipboard not available
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      className="copy-btn"
+      onClick={handleCopy}
+      aria-label={copied ? 'Copied' : 'Copy to clipboard'}
+      title="Copy to clipboard"
+    >
+      {copied ? '✓' : '⎘'}
+    </button>
+  )
 }
 
 /** Displays the current analysis result, or loading/error/empty states. */
@@ -39,6 +67,8 @@ export function ResultPanel() {
     )
   }
 
+  const allSteps = result.fixSteps.join('\n')
+
   return (
     <div className="result-panel">
       <div className="result-panel__meta">
@@ -53,10 +83,16 @@ export function ResultPanel() {
       </section>
 
       <section className="result-panel__section">
-        <h3 className="result-panel__heading">Fix steps</h3>
+        <div className="result-panel__heading-row">
+          <h3 className="result-panel__heading">Fix steps</h3>
+          <CopyButton text={allSteps} />
+        </div>
         <ol className="result-panel__steps">
           {result.fixSteps.map((step, i) => (
-            <li key={i}>{step}</li>
+            <li key={i}>
+              <span className="result-panel__step-text">{step}</span>
+              <CopyButton text={step} />
+            </li>
           ))}
         </ol>
       </section>
