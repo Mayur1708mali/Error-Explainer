@@ -62,6 +62,7 @@ function normalizeCandidate(value: unknown): unknown {
     fixSteps: Array.isArray(obj.fixSteps) ? obj.fixSteps : [],
     confidence: typeof obj.confidence === 'number' ? obj.confidence : 0.5,
     sources: Array.isArray(obj.sources) ? obj.sources : [],
+    examples: Array.isArray(obj.examples) ? obj.examples : [],
   }
 }
 

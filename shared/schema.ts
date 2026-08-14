@@ -7,6 +7,16 @@ export const sourceSchema = z.object({
   snippet: z.string(),
 })
 
+/** A before/after code example illustrating a fix. */
+export const codeExampleSchema = z.object({
+  /** Short description of what this example demonstrates. */
+  description: z.string(),
+  /** The broken code snippet. */
+  before: z.string(),
+  /** The corrected code snippet. */
+  after: z.string(),
+})
+
 /**
  * The structured result of analyzing an error / stack trace.
  * The LLM is instructed to return JSON matching exactly this shape.
@@ -19,7 +29,10 @@ export const analyzeResponseSchema = z.object({
   /** Model confidence, clamped to 0..1. */
   confidence: z.number().min(0).max(1),
   sources: z.array(sourceSchema),
+  /** 1–2 before/after code examples showing the fix in action. */
+  examples: z.array(codeExampleSchema),
 })
 
 export type Source = z.infer<typeof sourceSchema>
+export type CodeExample = z.infer<typeof codeExampleSchema>
 export type AnalyzeResponse = z.infer<typeof analyzeResponseSchema>
