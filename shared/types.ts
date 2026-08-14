@@ -5,8 +5,8 @@
 
 // AnalyzeResponse / Source are defined by the Zod schema so there is a single
 // source of truth for both runtime validation and the TypeScript types.
-import type { AnalyzeResponse, Source } from './schema'
-export type { AnalyzeResponse, Source }
+import type { AnalyzeResponse, CodeExample, Source } from './schema'
+export type { AnalyzeResponse, CodeExample, Source }
 
 /** Chat model that can be selected for analysis. Restricted to what we ship. */
 export type ChatModel = 'qwen2.5-coder:3b' | 'qwen2.5-coder:7b'
