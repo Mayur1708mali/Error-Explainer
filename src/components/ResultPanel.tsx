@@ -98,6 +98,33 @@ export function ResultPanel() {
         </ol>
       </section>
 
+      {result.examples.length > 0 ? (
+        <section className="result-panel__section">
+          <h3 className="result-panel__heading">Examples</h3>
+          <div className="result-panel__examples">
+            {result.examples.map((example, i) => (
+              <div key={i} className="result-panel__example">
+                <p className="result-panel__example-desc">{example.description}</p>
+                <div className="result-panel__code-block">
+                  <div className="result-panel__code-header">
+                    <span className="result-panel__code-label result-panel__code-label--before">Before</span>
+                    <CopyButton text={example.before} />
+                  </div>
+                  <pre className="result-panel__code"><code>{example.before}</code></pre>
+                </div>
+                <div className="result-panel__code-block">
+                  <div className="result-panel__code-header">
+                    <span className="result-panel__code-label result-panel__code-label--after">After</span>
+                    <CopyButton text={example.after} />
+                  </div>
+                  <pre className="result-panel__code"><code>{example.after}</code></pre>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {result.sources.length > 0 ? (
         <section className="result-panel__section">
           <h3 className="result-panel__heading">Sources</h3>
