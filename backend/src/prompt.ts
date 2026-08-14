@@ -19,6 +19,9 @@ no commentary before or after. The JSON MUST match this exact shape:
   "confidence": number,         // your confidence from 0 to 1
   "sources": [                  // supporting references; use [] if none
     { "title": string, "url": string, "snippet": string }
+  ],
+  "examples": [                 // 1–2 before/after code examples showing the fix
+    { "description": string, "before": string, "after": string }
   ]
 }
 
@@ -27,7 +30,8 @@ Rules:
 - "confidence" must be a number between 0 and 1 inclusive.
 - If you cannot identify a framework, set "framework" to null (not "none").
 - If you have no reliable sources, set "sources" to an empty array [].
-- Keep "rootCause" focused on the actual cause, not generic advice.`
+- Keep "rootCause" focused on the actual cause, not generic advice.
+- Include 1–2 code examples in "examples" illustrating the fix. Each has a short "description", the broken code in "before", and the corrected code in "after". Keep snippets concise (under 10 lines each). If the error is not code-related or no example is possible, use an empty array [].`
 
 /**
  * Build the chat messages for analyzing a given error/stack-trace input.
