@@ -45,6 +45,7 @@ describe('analyzeResponseSchema', () => {
     fixSteps: ['Define the variable', 'Restart server'],
     confidence: 0.85,
     sources: [{ title: 'MDN', url: 'https://mdn.io', snippet: 'See docs' }],
+    examples: [],
   }
 
   it('accepts a fully valid response', () => {
